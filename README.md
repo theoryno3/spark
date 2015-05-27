@@ -13,7 +13,8 @@ and Spark Streaming for stream processing.
 ## Online Documentation
 
 You can find the latest Spark documentation, including a programming
-guide, on the [project web page](http://spark.apache.org/documentation.html).
+guide, on the [project web page](http://spark.apache.org/documentation.html)
+and [project wiki](https://cwiki.apache.org/confluence/display/SPARK).
 This README file only contains basic setup instructions.
 
 ## Building Spark
@@ -75,7 +76,7 @@ can be run using:
     ./dev/run-tests
 
 Please see the guidance on how to 
-[run all automated tests](https://cwiki.apache.org/confluence/display/SPARK/Contributing+to+Spark#ContributingtoSpark-AutomatedTesting).
+[run tests for a module, or individual tests](https://cwiki.apache.org/confluence/display/SPARK/Useful+Developer+Tools).
 
 ## A Note About Hadoop Versions
 

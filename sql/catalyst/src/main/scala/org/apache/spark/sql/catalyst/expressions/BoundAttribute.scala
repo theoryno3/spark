@@ -19,7 +19,7 @@ package org.apache.spark.sql.catalyst.expressions
 
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.errors.attachTree
-import org.apache.spark.sql.catalyst.types._
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.catalyst.trees
 
 /**
@@ -28,13 +28,19 @@ import org.apache.spark.sql.catalyst.trees
  * the layout of intermediate tuples, BindReferences should be run after all such transformations.
  */
 case class BoundReference(ordinal: Int, dataType: DataType, nullable: Boolean)
-  extends Expression with trees.LeafNode[Expression] {
+  extends NamedExpression with trees.LeafNode[Expression] {
 
-  type EvaluatedType = Any
-
-  override def toString = s"input[$ordinal]"
+  override def toString: String = s"input[$ordinal]"
 
   override def eval(input: Row): Any = input(ordinal)
+
+  override def name: String = s"i[$ordinal]"
+
+  override def toAttribute: Attribute = throw new UnsupportedOperationException
+
+  override def qualifiers: Seq[String] = throw new UnsupportedOperationException
+
+  override def exprId: ExprId = throw new UnsupportedOperationException
 }
 
 object BindReferences extends Logging {

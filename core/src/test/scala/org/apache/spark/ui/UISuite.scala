@@ -18,20 +18,17 @@
 package org.apache.spark.ui
 
 import java.net.ServerSocket
-import javax.servlet.http.HttpServletRequest
 
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
-import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.scalatest.FunSuite
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.time.SpanSugar._
 
-import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.LocalSparkContext._
-import scala.xml.Node
+import org.apache.spark.{SparkConf, SparkContext}
 
 class UISuite extends FunSuite {
 
@@ -73,49 +70,9 @@ class UISuite extends FunSuite {
     }
   }
 
-  ignore("attaching a new tab") {
-    withSpark(newSparkContext()) { sc =>
-      val sparkUI = sc.ui.get
-
-      val newTab = new WebUITab(sparkUI, "foo") {
-        attachPage(new WebUIPage("") {
-          def render(request: HttpServletRequest): Seq[Node] = {
-            <b>"html magic"</b>
-          }
-        })
-      }
-      sparkUI.attachTab(newTab)
-      eventually(timeout(10 seconds), interval(50 milliseconds)) {
-        val html = Source.fromURL(sparkUI.appUIAddress).mkString
-        assert(!html.contains("random data that should not be present"))
-
-        // check whether new page exists
-        assert(html.toLowerCase.contains("foo"))
-
-        // check whether other pages still exist
-        assert(html.toLowerCase.contains("stages"))
-        assert(html.toLowerCase.contains("storage"))
-        assert(html.toLowerCase.contains("environment"))
-        assert(html.toLowerCase.contains("executors"))
-      }
-
-      eventually(timeout(10 seconds), interval(50 milliseconds)) {
-        val html = Source.fromURL(sparkUI.appUIAddress.stripSuffix("/") + "/foo").mkString
-        // check whether new page exists
-        assert(html.contains("magic"))
-      }
-    }
-  }
-
   test("jetty selects different port under contention") {
-    val startPort = 4040
-    val server = new Server(startPort)
-
-    Try { server.start() } match {
-      case Success(s) =>
-      case Failure(e) =>
-      // Either case server port is busy hence setup for test complete
-    }
+    val server = new ServerSocket(0)
+    val startPort = server.getLocalPort
     val serverInfo1 = JettyUtils.startJettyServer(
       "0.0.0.0", startPort, Seq[ServletContextHandler](), new SparkConf)
     val serverInfo2 = JettyUtils.startJettyServer(
@@ -126,6 +83,9 @@ class UISuite extends FunSuite {
     assert(boundPort1 != startPort)
     assert(boundPort2 != startPort)
     assert(boundPort1 != boundPort2)
+    serverInfo1.server.stop()
+    serverInfo2.server.stop()
+    server.close()
   }
 
   test("jetty binds to port 0 correctly") {
